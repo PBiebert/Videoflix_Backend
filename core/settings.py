@@ -1,4 +1,3 @@
-import json
 import os
 from pathlib import Path
 
@@ -18,9 +17,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
 
 # Application definition
@@ -34,11 +35,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "django_rq",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -47,8 +50,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ALLOWED_HOSTS = json.loads(os.getenv("ALLOWED_HOSTS", "[]"))
-CORS_ALLOWED_ORIGINS = json.loads(os.getenv("CORS_ALLOWED_ORIGINS", "[]"))
 
 ROOT_URLCONF = "core.urls"
 
@@ -75,9 +76,32 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", default="videoflix_db"),
+        "USER": os.environ.get("DB_USER", default="videoflix_user"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", default="supersecretpassword"),
+        "HOST": os.environ.get("DB_HOST", default="db"),
+        "PORT": os.environ.get("DB_PORT", default=5432),
     }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_LOCATION", default="redis://redis:6379/1"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "KEY_PREFIX": "videoflix",
+    }
+}
+
+RQ_QUEUES = {
+    "default": {
+        "HOST": os.environ.get("REDIS_HOST", default="redis"),
+        "PORT": os.environ.get("REDIS_PORT", default=6379),
+        "DB": os.environ.get("REDIS_DB", default=0),
+        "DEFAULT_TIMEOUT": 900,
+        "REDIS_CLIENT_KWARGS": {},
+    },
 }
 
 
@@ -115,7 +139,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "static"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
