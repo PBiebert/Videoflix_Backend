@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "django_rq",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
