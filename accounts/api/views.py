@@ -60,6 +60,12 @@ class ActivateAccountView(APIView):
         token = kwargs.get("token")
         is_valid = default_token_generator.check_token(user, token)
 
+        if user.is_active:
+            return Response(
+                {"message": "Account is already activated."},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
         if is_valid:
             user.is_active = True
             user.save()

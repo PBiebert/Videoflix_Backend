@@ -105,30 +105,27 @@
               <td class="content">
                 <h1 class="title">Willkommen, {{ user.email }}!</h1>
                 <p class="text">
-                  Nur noch ein Klick trennt dich von deiner Videoflix-Bibliothek. Bestätige deine Registrierung, um deinen Account zu aktivieren.
+                  Nur noch ein Klick trennt dich von deiner
+                  Videoflix-Bibliothek. Bestätige deine Registrierung, um deinen
+                  Account zu aktivieren.
                 </p>
               </td>
             </tr>
             <tr>
               <td class="button-row">
-                <a href="{{ activation_link }}" class="button">Account aktivieren</a>
+                <a href="{{ activation_link }}" class="button"
+                  >Account aktivieren</a
+                >
               </td>
-            </tr>
-            <tr>
-              <td class="fallback">
-                <p class="fallback-text">
-                  Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:<br />
-                  <a href="{{ activation_link }}" class="fallback-link">{{ activation_link }}</a>
-                </p>
-              </td>
-            </tr>
-            <tr>
+              <tr>
               <td class="footer">
                 <p class="footer-text">
-                  Falls du dich nicht registriert hast, ignoriere diese E-Mail einfach.<br />
+                  Falls du dich nicht registriert hast, ignoriere diese E-Mail
+                  einfach.<br />
                   &copy; Videoflix
                 </p>
               </td>
+              </tr>
             </tr>
           </table>
         </td>
