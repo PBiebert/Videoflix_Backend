@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Willkommen bei Videoflix</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0d0d0d;
+      }
+      .wrapper {
+        background-color: #0d0d0d;
+        padding: 40px 0;
+        text-align: center;
+      }
+      .card {
+        margin: 0 auto;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .header {
+        background-color: #141414;
+        padding: 28px 40px;
+        text-align: center;
+        border-bottom: 1px solid #262626;
+      }
+      .logo {
+        color: #e50914;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .content {
+        padding: 40px 40px 24px 40px;
+        text-align: center;
+      }
+      .title {
+        margin: 0 0 16px 0;
+        color: #ffffff;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .text {
+        margin: 0;
+        color: #b3b3b3;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .button-row {
+        padding: 8px 40px 40px 40px;
+        text-align: center;
+      }
+      .button {
+        display: inline-block;
+        background-color: #e50914;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 14px 36px;
+        border-radius: 6px;
+      }
+      .fallback {
+        padding: 0 40px 32px 40px;
+        text-align: center;
+      }
+      .fallback-text {
+        margin: 0;
+        color: #666666;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .fallback-link {
+        color: #e50914;
+        word-break: break-all;
+      }
+      .footer {
+        background-color: #141414;
+        padding: 20px 40px;
+        text-align: center;
+        border-top: 1px solid #262626;
+      }
+      .footer-text {
+        margin: 0;
+        color: #555555;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <table width="100%" class="wrapper">
+      <tr>
+        <td>
+          <table width="480" class="card">
+            <tr>
+              <td class="header">
+                <span class="logo">VIDEOFLIX</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="content">
+                <h1 class="title">Willkommen, {{ user.email }}!</h1>
+                <p class="text">
+                  Nur noch ein Klick trennt dich von deiner Videoflix-Bibliothek. Bestätige deine Registrierung, um deinen Account zu aktivieren.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td class="button-row">
+                <a href="{{ activation_link }}" class="button">Account aktivieren</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="fallback">
+                <p class="fallback-text">
+                  Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:<br />
+                  <a href="{{ activation_link }}" class="fallback-link">{{ activation_link }}</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td class="footer">
+                <p class="footer-text">
+                  Falls du dich nicht registriert hast, ignoriere diese E-Mail einfach.<br />
+                  &copy; Videoflix
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
