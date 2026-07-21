@@ -3,7 +3,7 @@ from django.contrib.auth.forms import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_201_CREATED
 from rest_framework.views import APIView
 
 from accounts.api.serializers import RegistrationSerializer
@@ -24,5 +24,5 @@ class RegisterView(APIView):
 
         return Response(
             {"user": {"id": user.id, "email": user.email}, "token": token},
-            status=HTTP_200_OK,
+            status=HTTP_201_CREATED,
         )
