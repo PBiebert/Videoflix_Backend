@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -33,3 +34,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
             **validated_data, username=validated_data["email"], is_active=False
         )
         return user
+
+
+class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Login serializer that generates access/refresh tokens as usual, but
+    also includes the authenticated user's data in the validated result."""
+
+    def validate(self, data):
+        """Validates the credentials and enriches the result with user data."""
+
+        data = super().validate(data)
+        data["user"] = {
+            "id": self.user.id,
+            "username": self.user.email,
+        }
+        return data

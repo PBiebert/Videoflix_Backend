@@ -3,18 +3,25 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import default_token_generator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.api.serializers import RegistrationSerializer
 from accounts.api.services import send_activation_email
+from accounts.api.token_helpers import set_tokens_as_cookies
+
+from .serializers import CookieTokenObtainPairSerializer
 
 User = get_user_model()
 
 
 class RegisterView(APIView):
     """Registers a new, initially inactive user and triggers the activation email."""
+
+    permission_classes = [AllowAny]
 
     def post(self, request):
         """
@@ -39,6 +46,8 @@ class RegisterView(APIView):
 
 class ActivateAccountView(APIView):
     """Activates a user based on the uidb64/token pair from the activation link."""
+
+    permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         """
@@ -80,3 +89,30 @@ class ActivateAccountView(APIView):
         return Response(
             {"message": "Account successfully activated."}, status=HTTP_200_OK
         )
+
+
+class LoginView(TokenObtainPairView):
+    """Login view that returns access/refresh tokens as HttpOnly cookies
+    instead of in the response body."""
+
+    serializer_class = CookieTokenObtainPairSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        """Validates the credentials and sets the generated tokens as
+        HttpOnly cookies instead of exposing them in the response body."""
+
+        # Credentials validieren, Tokens + Userdaten erzeugen lassen
+        response = super().post(request, *args, **kwargs)
+
+        # Tokens und Userdaten aus der Standard-Response herausholen
+        access = response.data.get("access")
+        refresh = response.data.get("refresh")
+        user = response.data.get("user")
+
+        # Tokens als HttpOnly-Cookies setzen statt sie im Body preiszugeben
+        set_tokens_as_cookies(response, {"access": access, "refresh": refresh})
+
+        # Body auf eine saubere Erfolgsmeldung + Userdaten reduzieren
+        response.data = {"detail": "Login successful", "user": user}
+        return response
