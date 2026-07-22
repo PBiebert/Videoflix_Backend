@@ -12,6 +12,7 @@ from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
+    HTTP_404_NOT_FOUND,
 )
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -19,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.api.serializers import RegistrationSerializer
-from accounts.api.services import send_activation_email
+from accounts.api.services import send_activation_email, send_password_reset_email
 from accounts.api.token_helpers import set_tokens_as_cookies
 
 from .serializers import CookieTokenObtainPairSerializer
@@ -198,3 +199,36 @@ class LogoutView(APIView):
         response.delete_cookie("refresh_token", samesite="Lax")
 
         return response
+
+
+class PasswortResetView(APIView):
+    """Sends a password-reset email to the user matching the given email."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Looks up the user by email and sends a password-reset email if one exists;
+        returns 404 if the user is unknown.
+        """
+
+        email = request.data.get("email")
+
+        try:
+            user = User.objects.get(email=email, is_active=True)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=HTTP_404_NOT_FOUND)
+
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        reset_url = request.build_absolute_uri(
+            f"/api/password_confirm/{uidb64}/{token}/"
+        )
+        django_rq.enqueue(send_password_reset_email, user, reset_url)
+
+        return Response(
+            {"detail": "An email has been sent to reset your password."},
+            status=HTTP_200_OK,
+        )

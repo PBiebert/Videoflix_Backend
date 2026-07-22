@@ -21,3 +21,18 @@ def send_activation_email(user, activation_link):
 
     # E-Mail versenden
     msg.send()
+
+
+def send_password_reset_email(user, reset_link):
+    context = {"user": user, "reset_link": reset_link}
+
+    html_content = render_to_string("accounts/reset_password_email.html", context)
+    text_content = strip_tags(html_content)
+
+    subject = "Reset your password"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to = [user.email]
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+
+    msg.send()
