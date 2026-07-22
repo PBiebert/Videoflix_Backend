@@ -1,13 +1,21 @@
 import django_rq
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import default_token_generator
+from django.core.exceptions import ValidationError
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+)
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.api.serializers import RegistrationSerializer
 from accounts.api.services import send_activation_email
@@ -115,4 +123,44 @@ class LoginView(TokenObtainPairView):
 
         # Body auf eine saubere Erfolgsmeldung + Userdaten reduzieren
         response.data = {"detail": "Login successful", "user": user}
+        return response
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    """Refresh view that reads the refresh token from the HttpOnly cookie
+    instead of the request body and returns the new access token as a
+    cookie again."""
+
+    def post(self, request, *args, **kwargs):
+        """Validates the refresh token from the cookie and sets the new
+        access token as an HttpOnly cookie."""
+
+        # Refresh-Token aus dem Cookie holen statt aus dem Request-Body
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token is None:
+            return Response(
+                {"detail": "Refresh token not found!"},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except (TokenError, ValidationError):
+            return Response(
+                {"detail": "Refresh token is invalid!"},
+                status=HTTP_401_UNAUTHORIZED,
+            )
+        access_token = serializer.validated_data.get("access")
+
+        response = Response({"detail": "Access-Token refreshed"})
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite="Lax",
+        )
         return response

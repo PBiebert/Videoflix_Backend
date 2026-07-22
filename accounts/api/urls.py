@@ -1,7 +1,11 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
 
-from accounts.api.views import ActivateAccountView, LoginView, RegisterView
+from accounts.api.views import (
+    ActivateAccountView,
+    CookieTokenRefreshView,
+    LoginView,
+    RegisterView,
+)
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
@@ -11,5 +15,5 @@ urlpatterns = [
         name="activate_account",
     ),
     path("login/", LoginView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("token/refresh/", CookieTokenRefreshView.as_view(), name="token_refresh"),
 ]
