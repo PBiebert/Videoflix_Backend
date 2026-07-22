@@ -5,7 +5,7 @@ from django.contrib.auth.forms import default_token_generator
 from django.core.exceptions import ValidationError
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK,
@@ -15,6 +15,7 @@ from rest_framework.status import (
 )
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.api.serializers import RegistrationSerializer
@@ -135,7 +136,6 @@ class CookieTokenRefreshView(TokenRefreshView):
         """Validates the refresh token from the cookie and sets the new
         access token as an HttpOnly cookie."""
 
-        # Refresh-Token aus dem Cookie holen statt aus dem Request-Body
         refresh_token = request.COOKIES.get("refresh_token")
 
         if refresh_token is None:
@@ -163,4 +163,38 @@ class CookieTokenRefreshView(TokenRefreshView):
             secure=not settings.DEBUG,
             samesite="Lax",
         )
+        return response
+
+
+class LogoutView(APIView):
+    """Logs the user out by blacklisting the refresh token and deleting both token cookies."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token is None:
+            return Response(
+                {"detail": "Refresh token not found!"},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            RefreshToken(refresh_token).blacklist()
+        except TokenError:
+            return Response(
+                {"detail": "Refresh token is invalid!"},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        response = Response(
+            {
+                "detail": "Logout successful! All tokens will be deleted. Refresh token is now invalid."
+            }
+        )
+
+        response.delete_cookie("access_token", samesite="Lax")
+        response.delete_cookie("refresh_token", samesite="Lax")
+
         return response
