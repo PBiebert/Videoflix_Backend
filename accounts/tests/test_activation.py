@@ -10,9 +10,11 @@ User = get_user_model()
 
 
 class ActivateAccountViewTests(APITestCase):
-    """Tests für GET /api/activate/<uidb64>/<token>/ (accounts.api.views.ActivateAccountView)."""
+    """Tests for GET /api/activate/<uidb64>/<token>/ (accounts.api.views.ActivateAccountView)."""
 
     def setUp(self):
+        """Set up the test case with an inactive user and a valid activation token."""
+
         self.user = User.objects.create_user(
             username="inactive@example.com",
             email="inactive@example.com",
@@ -25,8 +27,8 @@ class ActivateAccountViewTests(APITestCase):
     def _activation_url(self, uidb64, token):
         return reverse("activate_account", kwargs={"uidb64": uidb64, "token": token})
 
-    def test_activation_success_activates_user(self):
-        """Gültiges uidb64/token-Paar aktiviert den User und liefert 200."""
+    def test_get_activate_valid_token_return_200(self):
+        """Test that activating with a valid uidb64/token pair returns a 200 response and activates the user."""
 
         response = self.client.get(self._activation_url(self.uidb64, self.token))
 
@@ -34,8 +36,8 @@ class ActivateAccountViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(self.user.is_active)
 
-    def test_activation_fails_with_invalid_token(self):
-        """Falscher Token schlägt mit 400 fehl, User bleibt inaktiv."""
+    def test_get_activate_invalid_token_return_400(self):
+        """Test that activating with an invalid token returns a 400 response and leaves the user inactive."""
 
         response = self.client.get(self._activation_url(self.uidb64, "invalid-token"))
 
@@ -43,15 +45,15 @@ class ActivateAccountViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(self.user.is_active)
 
-    def test_activation_fails_with_malformed_uidb64(self):
-        """Kein gültiger Base64-String führt zu 400 statt zu einem 500er."""
+    def test_get_activate_malformed_uidb64_return_400(self):
+        """Test that activating with a malformed uidb64 returns a 400 response instead of a 500 error."""
 
         response = self.client.get(self._activation_url("not-valid-base64", self.token))
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_activation_fails_for_nonexistent_user(self):
-        """Syntaktisch gültiges uidb64 ohne passenden User führt zu 400."""
+    def test_get_activate_nonexistent_user_return_400(self):
+        """Test that activating a syntactically valid uidb64 with no matching user returns a 400 response."""
 
         nonexistent_uidb64 = urlsafe_base64_encode(force_bytes(99))
 
@@ -59,10 +61,10 @@ class ActivateAccountViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_activation_token_cannot_be_reused(self):
+    def test_get_activate_reused_token_return_400(self):
         """
-        Nach erfolgreicher Aktivierung ist derselbe Token ungültig, weil sich
-        der User-Zustand (is_active) geändert hat und in den Hash einfließt.
+        Test that reusing the same token after a successful activation returns a 400 response,
+        because the changed user state (is_active) is part of the token hash.
         """
 
         self.client.get(self._activation_url(self.uidb64, self.token))

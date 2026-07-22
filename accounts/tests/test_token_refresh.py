@@ -11,6 +11,8 @@ class CookieTokenRefreshViewTests(APITestCase):
     """Tests for POST /api/token/refresh/ (accounts.api.views.CookieTokenRefreshView)."""
 
     def setUp(self):
+        """Set up the test case with a valid user and a matching refresh token."""
+
         self.url = reverse("token_refresh")
         self.user = User.objects.create_user(
             username="active@example.com",
@@ -19,8 +21,8 @@ class CookieTokenRefreshViewTests(APITestCase):
         )
         self.refresh_token = RefreshToken.for_user(self.user)
 
-    def test_refresh_success_sets_new_access_cookie(self):
-        """Valid refresh cookie returns 200 and sets a new access token cookie."""
+    def test_post_token_refresh_valid_cookie_return_200(self):
+        """Test that a valid refresh cookie returns a 200 response and sets a new access token cookie."""
 
         self.client.cookies["refresh_token"] = str(self.refresh_token)
 
@@ -29,15 +31,15 @@ class CookieTokenRefreshViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access_token", response.cookies)
 
-    def test_refresh_fails_without_cookie(self):
-        """Missing refresh cookie fails with 400."""
+    def test_post_token_refresh_missing_cookie_return_400(self):
+        """Test that a missing refresh cookie returns a 400 response."""
 
         response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_refresh_fails_with_invalid_token(self):
-        """Malformed refresh token fails with 401."""
+    def test_post_token_refresh_invalid_token_return_401(self):
+        """Test that a malformed refresh token returns a 401 response."""
 
         self.client.cookies["refresh_token"] = "not-a-valid-token"
 

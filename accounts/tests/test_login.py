@@ -10,7 +10,9 @@ class LoginViewTests(APITestCase):
     """Tests for POST /api/login/ (accounts.api.views.LoginView)."""
 
     def setUp(self):
-        self.url = reverse("token_obtain_pair")
+        """Set up the test case with a valid, active user."""
+
+        self.url = reverse("login")
         self.password = "StrongPassword123"
         self.user = User.objects.create_user(
             username="active@example.com",
@@ -18,8 +20,8 @@ class LoginViewTests(APITestCase):
             password=self.password,
         )
 
-    def test_login_success_sets_cookies_and_hides_tokens_from_body(self):
-        """Successful login returns 200 and sets access/refresh cookies."""
+    def test_post_login_valid_credentials_return_200(self):
+        """Test that a successful login returns a 200 response and sets access/refresh cookies."""
 
         response = self.client.post(
             self.url, {"email": self.user.email, "password": self.password}
@@ -29,8 +31,8 @@ class LoginViewTests(APITestCase):
         self.assertIn("access_token", response.cookies)
         self.assertIn("refresh_token", response.cookies)
 
-    def test_login_success_returns_user_data_in_body(self):
-        """Successful login includes the user data in the response body."""
+    def test_post_login_valid_credentials_return_user_data(self):
+        """Test that a successful login includes the user data in the response body."""
 
         response = self.client.post(
             self.url, {"email": self.user.email, "password": self.password}
@@ -38,8 +40,8 @@ class LoginViewTests(APITestCase):
 
         self.assertEqual(response.data["user"]["id"], self.user.id)
 
-    def test_login_fails_with_wrong_password(self):
-        """Wrong password fails with 401, no cookies are set."""
+    def test_post_login_wrong_password_return_401(self):
+        """Test that a login with the wrong password returns a 401 response and sets no cookies."""
 
         response = self.client.post(
             self.url, {"email": self.user.email, "password": "WrongPassword123"}
@@ -48,8 +50,8 @@ class LoginViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertNotIn("access_token", response.cookies)
 
-    def test_login_fails_for_nonexistent_user(self):
-        """Login with an unknown email fails with 401."""
+    def test_post_login_nonexistent_user_return_401(self):
+        """Test that a login with an unknown email returns a 401 response."""
 
         response = self.client.post(
             self.url,
@@ -58,8 +60,8 @@ class LoginViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_login_fails_for_inactive_user(self):
-        """Login with a not-yet-activated user fails with 401."""
+    def test_post_login_inactive_user_return_401(self):
+        """Test that a login with a not-yet-activated user returns a 401 response."""
 
         User.objects.create_user(
             username="inactive@example.com",
@@ -75,8 +77,8 @@ class LoginViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_login_fails_on_missing_fields(self):
-        """Login without a password fails with 400."""
+    def test_post_login_missing_fields_return_400(self):
+        """Test that a login without a password returns a 400 response."""
 
         response = self.client.post(self.url, {"email": self.user.email})
 
