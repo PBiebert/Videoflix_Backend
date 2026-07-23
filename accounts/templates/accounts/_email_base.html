@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}
+
+      {% endblock %}
+    </title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: rgba(28, 39, 57, 1);
+      }
+      .wrapper {
+        background-color: rgba(28, 39, 57, 1);
+        padding: 40px 0;
+        text-align: center;
+      }
+      .card {
+        margin: 0 auto;
+        background-color: rgba(33, 48, 73, 1);
+        border: 1px solid rgba(46, 62, 223, 1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .header {
+        background-color: #18202e;
+        padding: 28px 40px;
+        text-align: center;
+        border-bottom: 1px solid rgba(46, 62, 223, 0.3);
+      }
+      .content {
+        padding: 40px 40px 24px 40px;
+        text-align: center;
+      }
+      .title {
+        margin: 0 0 16px 0;
+        color: #ffffff;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .text {
+        margin: 0;
+        color: #ededed;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .button-row {
+        padding: 8px 40px 40px 40px;
+        text-align: center;
+      }
+      .button {
+        display: inline-block;
+        background-color: rgba(46, 62, 223, 1);
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 40px;
+      }
+      .footer {
+        background-color: #18202e;
+        padding: 20px 40px;
+        text-align: center;
+        border-top: 1px solid rgba(46, 62, 223, 0.3);
+      }
+      .footer-text {
+        margin: 0;
+        color: #8b96ab;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <table width="100%" class="wrapper">
+      <tr>
+        <td>
+          <table width="480" class="card">
+            <tr>
+              <td class="header">
+                <img src="{{ logo_url }}" alt="Videoflix" width="140" style="display:block; margin:0 auto;" />
+              </td>
+            </tr>
+            <tr>
+              <td class="content">
+                <h1 class="title">
+                  {% block heading %}
+
+                  {% endblock %}
+                </h1>
+                <p class="text">
+                  {% block message %}
+
+                  {% endblock %}
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td class="button-row">
+                <a href="{% block link_url %}
+
+                  {% endblock %}"
+                  class="button">
+                  {% block button_label %}
+
+                  {% endblock %}
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td class="footer">
+                <p class="footer-text">
+                  {% block footer_text %}
+
+                  {% endblock %}<br />
+                  &copy; Videoflix
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
