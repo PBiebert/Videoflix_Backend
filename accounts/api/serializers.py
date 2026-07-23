@@ -49,3 +49,15 @@ class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
             "username": self.user.email,
         }
         return data
+
+
+class CheckPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        """Validate that the password and repeated password match."""
+
+        if data["new_password"] != data.pop("confirm_password"):
+            raise serializers.ValidationError("Passwords do not match")
+        return data

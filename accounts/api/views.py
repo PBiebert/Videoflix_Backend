@@ -23,7 +23,7 @@ from accounts.api.serializers import RegistrationSerializer
 from accounts.api.services import send_activation_email, send_password_reset_email
 from accounts.api.token_helpers import set_tokens_as_cookies
 
-from .serializers import CookieTokenObtainPairSerializer
+from .serializers import CheckPasswordSerializer, CookieTokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -68,7 +68,7 @@ class ActivateAccountView(APIView):
         try:
             uid = force_str(urlsafe_base64_decode(kwargs.get("uidb64")))
             user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except (TypeError, ValueError, User.DoesNotExist):
             return Response(
                 {
                     "message": "Activation failed, please try again later or contact support."
@@ -231,4 +231,41 @@ class PasswortResetView(APIView):
         return Response(
             {"detail": "An email has been sent to reset your password."},
             status=HTTP_200_OK,
+        )
+
+
+class SetNewPasswordView(APIView):
+    """Sets a new password for the user identified by uidb64, after validating the reset token."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Decodes the user ID from uidb64, checks the token and active state,
+        and sets the new password from the request body on success.
+        """
+
+        try:
+            uid = force_str(urlsafe_base64_decode(kwargs.get("uidb64")))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, User.DoesNotExist):
+            return Response({"error": "User not found"}, status=HTTP_404_NOT_FOUND)
+
+        token = kwargs.get("token")
+        token_is_valid = default_token_generator.check_token(user, token)
+
+        if token_is_valid and user.is_active:
+            serializer = CheckPasswordSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user.set_password(serializer.validated_data["new_password"])
+            user.save()
+
+            return Response(
+                {"detail": "Your Password has been successfully reset."},
+                status=HTTP_200_OK,
+            )
+
+        return Response(
+            {"detail": "The link is invalid"},
+            status=HTTP_400_BAD_REQUEST,
         )
