@@ -24,6 +24,10 @@ CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 CORS_ALLOW_CREDENTIALS = True
 
+# Basis-URL des Frontends, für Links in E-Mails (Aktivierung, Passwort-Reset) -
+# zeigt auf die Frontend-Seiten, die selbst den passenden API-Request auslösen
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Application definition

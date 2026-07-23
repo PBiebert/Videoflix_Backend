@@ -45,7 +45,7 @@ class RegisterView(APIView):
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        activation_url = request.build_absolute_uri(f"/api/activate/{uidb64}/{token}/")
+        activation_url = f"{settings.FRONTEND_URL}/pages/auth/activate.html?uid={uidb64}&token={token}"
         django_rq.enqueue(send_activation_email, user, activation_url)
 
         return Response(
@@ -112,18 +112,14 @@ class LoginView(TokenObtainPairView):
         """Validates the credentials and sets the generated tokens as
         HttpOnly cookies instead of exposing them in the response body."""
 
-        # Credentials validieren, Tokens + Userdaten erzeugen lassen
         response = super().post(request, *args, **kwargs)
 
-        # Tokens und Userdaten aus der Standard-Response herausholen
         access = response.data.get("access")
         refresh = response.data.get("refresh")
         user = response.data.get("user")
 
-        # Tokens als HttpOnly-Cookies setzen statt sie im Body preiszugeben
         set_tokens_as_cookies(response, {"access": access, "refresh": refresh})
 
-        # Body auf eine saubere Erfolgsmeldung + Userdaten reduzieren
         response.data = {"detail": "Login successful", "user": user}
         return response
 
@@ -223,9 +219,7 @@ class PasswortResetView(APIView):
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        reset_url = request.build_absolute_uri(
-            f"/api/password_confirm/{uidb64}/{token}/"
-        )
+        reset_url = f"{settings.FRONTEND_URL}/pages/auth/confirm_password.html?uid={uidb64}&token={token}"
         django_rq.enqueue(send_password_reset_email, user, reset_url)
 
         return Response(
