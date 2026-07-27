@@ -4,7 +4,10 @@ from pathlib import Path
 
 def convert_video(source, quality):
     path = Path(source)
-    new_file_name = str(path.with_name(f"{path.stem}_{quality}p.mp4"))
+    output_dir = path.parent / f"{path.stem}_{quality}p"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    playlist_path = output_dir / "index.m3u8"
+
     cmd = [
         "ffmpeg",
         "-i",
@@ -21,9 +24,15 @@ def convert_video(source, quality):
         "aac",
         "-b:a",
         "128k",
-        "-movflags",
-        "+faststart",
-        new_file_name,
+        "-hls_time",
+        "10",
+        "-hls_list_size",
+        "0",
+        "-hls_segment_filename",
+        str(output_dir / "segment_%05d.ts"),
+        "-f",
+        "hls",
+        str(playlist_path),
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
 

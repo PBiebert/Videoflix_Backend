@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 import django_rq
@@ -26,6 +27,6 @@ def auto_delete_video_file(sender, instance, **kwargs):
         os.remove(instance.video_file.path)
 
         for quality in VIDEO_QUALITYS:
-            converted_file = path.with_name(f"{path.stem}_{quality}p.mp4")
-            if os.path.isfile(converted_file):
-                os.remove(converted_file)
+            output_dir = path.parent / f"{path.stem}_{quality}p"
+            if output_dir.is_dir():
+                shutil.rmtree(output_dir)
