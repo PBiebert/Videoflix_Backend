@@ -30,3 +30,9 @@ def auto_delete_video_file(sender, instance, **kwargs):
             output_dir = path.parent / f"{path.stem}_{quality}p"
             if output_dir.is_dir():
                 shutil.rmtree(output_dir)
+
+
+@receiver(post_delete, sender=Video)
+def auto_delete_thumbnail_file(sender, instance, **kwargs):
+    if instance.thumbnail and os.path.isfile(instance.thumbnail.path):
+        os.remove(instance.thumbnail.path)
