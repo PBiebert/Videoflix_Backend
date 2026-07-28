@@ -9,13 +9,13 @@ from django.dispatch import receiver
 from video_library.models import Video
 from video_library.tasks import convert_video
 
-VIDEO_QUALITYS = ["480", "720", "1080"]
+VIDEO_RESOLUTIONS = ["480p", "720p", "1080p"]
 
 
 @receiver(post_save, sender=Video)
 def video_post_save(sender, instance, created, **kwargs):
     if created:
-        for quality in VIDEO_QUALITYS:
+        for quality in VIDEO_RESOLUTIONS:
             queue = django_rq.get_queue("default")
             queue.enqueue(convert_video, instance.video_file.path, quality)
 
@@ -26,8 +26,8 @@ def auto_delete_video_file(sender, instance, **kwargs):
         path = Path(instance.video_file.path)
         os.remove(instance.video_file.path)
 
-        for quality in VIDEO_QUALITYS:
-            output_dir = path.parent / f"{path.stem}_{quality}p"
+        for quality in VIDEO_RESOLUTIONS:
+            output_dir = path.parent / f"{path.stem}_{quality}"
             if output_dir.is_dir():
                 shutil.rmtree(output_dir)
 

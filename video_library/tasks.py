@@ -4,16 +4,17 @@ from pathlib import Path
 
 def convert_video(source, quality):
     path = Path(source)
-    output_dir = path.parent / f"{path.stem}_{quality}p"
+    output_dir = path.parent / f"{path.stem}_{quality}"
     output_dir.mkdir(parents=True, exist_ok=True)
     playlist_path = output_dir / "index.m3u8"
 
+    height = quality.rstrip("p")
     cmd = [
         "ffmpeg",
         "-i",
         source,
         "-vf",
-        f"scale=-2:{quality}",
+        f"scale=-2:{height}",
         "-c:v",
         "libx264",
         "-preset",
