@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotFound
@@ -16,6 +17,14 @@ class VideoListView(ListAPIView):
     queryset = Video.objects.all()
     serializer_class = VideoSerializer
     permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        cached_data = cache.get("video_list")
+        if cached_data is not None:
+            return cached_data
+        response = super().list(request, *args, **kwargs)
+        cache.set("video_list", response, 60 * 15)
+        return response
 
 
 class HLSPlaylistView(APIView):
@@ -45,7 +54,8 @@ class HLSPlaylistView(APIView):
             raise NotFound("Playlist not found")
 
         return FileResponse(
-            open(playlist_path, "rb"), "Content-Type: application/vnd.apple.mpegurl"
+            open(playlist_path, "rb"),
+            content_type="application/vnd.apple.mpegurl",
         )
 
 
@@ -78,4 +88,4 @@ class HLSSegmentView(APIView):
         if segment_path.name != segment or not segment_path.is_file():
             raise NotFound("Segment not found")
 
-        return FileResponse(open(segment_path, "rb"), "Content-Type: video/MP2T")
+        return FileResponse(open(segment_path, "rb"), content_type="video/MP2T")

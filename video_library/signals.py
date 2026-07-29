@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import django_rq
+from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -36,3 +37,9 @@ def auto_delete_video_file(sender, instance, **kwargs):
 def auto_delete_thumbnail_file(sender, instance, **kwargs):
     if instance.thumbnail and os.path.isfile(instance.thumbnail.path):
         os.remove(instance.thumbnail.path)
+
+
+@receiver(post_save, sender=Video)
+@receiver(post_delete, sender=Video)
+def invalidate_video_list_cache(sender, instance, **kwargs):
+    cache.delete("video_list")
