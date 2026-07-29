@@ -31,14 +31,14 @@ class LoginViewTests(APITestCase):
         self.assertIn("access_token", response.cookies)
         self.assertIn("refresh_token", response.cookies)
 
-    def test_post_login_valid_credentials_return_user_data(self):
-        """Test that a successful login includes the user data in the response body."""
+    def test_post_login_valid_credentials_return_detail_message(self):
+        """Test that a successful login returns a detail message and no token data in the body."""
 
         response = self.client.post(
             self.url, {"email": self.user.email, "password": self.password}
         )
 
-        self.assertEqual(response.data["user"]["id"], self.user.id)
+        self.assertEqual(response.data, {"detail": "Login successful"})
 
     def test_post_login_wrong_password_return_401(self):
         """Test that a login with the wrong password returns a 401 response and sets no cookies."""

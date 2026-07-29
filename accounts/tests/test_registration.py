@@ -27,7 +27,7 @@ class RegisterViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertFalse(user.is_active)
-        self.assertIn("token", response.data)
+        self.assertNotIn("token", response.data)
 
     def test_post_register_password_mismatch_return_400(self):
         """Test that registering with mismatching passwords returns a 400 response."""

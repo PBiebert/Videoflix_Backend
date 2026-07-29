@@ -23,7 +23,7 @@ from accounts.api.serializers import RegistrationSerializer
 from accounts.api.services import send_activation_email, send_password_reset_email
 from accounts.api.token_helpers import set_tokens_as_cookies
 
-from .serializers import CheckPasswordSerializer, CookieTokenObtainPairSerializer
+from .serializers import CheckPasswordSerializer
 
 User = get_user_model()
 
@@ -49,7 +49,7 @@ class RegisterView(APIView):
         django_rq.enqueue(send_activation_email, user, activation_url)
 
         return Response(
-            {"user": {"id": user.id, "email": user.email}, "token": token},
+            {"user": {"id": user.id, "email": user.email}},
             status=HTTP_201_CREATED,
         )
 
@@ -79,22 +79,22 @@ class ActivateAccountView(APIView):
         token = kwargs.get("token")
         is_valid = default_token_generator.check_token(user, token)
 
-        if user.is_active:
-            return Response(
-                {"message": "Account is already activated."},
-                status=HTTP_400_BAD_REQUEST,
-            )
-
-        if is_valid:
-            user.is_active = True
-            user.save()
-        else:
+        if not is_valid:
             return Response(
                 {
                     "message": "Activation failed, please try again later or contact support."
                 },
                 status=HTTP_400_BAD_REQUEST,
             )
+
+        if user.is_active:
+            return Response(
+                {"message": "Account is already activated."},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        user.is_active = True
+        user.save()
 
         return Response(
             {"message": "Account successfully activated."}, status=HTTP_200_OK
@@ -105,7 +105,6 @@ class LoginView(TokenObtainPairView):
     """Login view that returns access/refresh tokens as HttpOnly cookies
     instead of in the response body."""
 
-    serializer_class = CookieTokenObtainPairSerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -116,11 +115,10 @@ class LoginView(TokenObtainPairView):
 
         access = response.data.get("access")
         refresh = response.data.get("refresh")
-        user = response.data.get("user")
 
         set_tokens_as_cookies(response, {"access": access, "refresh": refresh})
 
-        response.data = {"detail": "Login successful", "user": user}
+        response.data = {"detail": "Login successful"}
         return response
 
 

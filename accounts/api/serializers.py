@@ -36,21 +36,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """Login serializer that generates access/refresh tokens as usual, but
-    also includes the authenticated user's data in the validated result."""
-
-    def validate(self, data):
-        """Validates the credentials and enriches the result with user data."""
-
-        data = super().validate(data)
-        data["user"] = {
-            "id": self.user.id,
-            "username": self.user.email,
-        }
-        return data
-
-
 class CheckPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
