@@ -2,14 +2,13 @@ from django.conf import settings
 
 
 def set_tokens_as_cookies(response, tokens):
-    """Setzt die Access- und Refresh-Token als HttpOnly-Cookies im Response-Objekt.
+    """Sets the access and refresh tokens as HttpOnly cookies on the response.
 
     Args:
-        response: DRF-Response-Objekt, auf dem die Cookies gesetzt werden.
-        tokens: Dictionary mit den Schlüsseln "access" und "refresh".
+        response: DRF response object the cookies are set on.
+        tokens: Dictionary with the keys "access" and "refresh".
     """
 
-    # Access-Token als HttpOnly-Cookie setzen
     response.set_cookie(
         key="access_token",
         value=tokens["access"],
@@ -18,7 +17,6 @@ def set_tokens_as_cookies(response, tokens):
         samesite="Lax",
     )
 
-    # Refresh-Token als HttpOnly-Cookie setzen
     response.set_cookie(
         key="refresh_token",
         value=tokens["refresh"],

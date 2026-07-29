@@ -20,6 +20,7 @@ class VideoListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
+        """Returns the serialized video list, cached for 15 minutes."""
         cached_data = cache.get("video_list")
         if cached_data is not None:
             return Response(cached_data)

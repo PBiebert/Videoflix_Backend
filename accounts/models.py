@@ -3,9 +3,7 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
-    """
-    Custom User-Model, das E-Mail statt Username als Login-Feld verwendet.
-    """
+    """Custom user model that uses email instead of username as the login field."""
 
     email = models.EmailField(unique=True)
 

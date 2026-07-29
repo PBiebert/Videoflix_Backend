@@ -17,7 +17,7 @@ def get_hls_directory_path(video, resolution):
         Path to the directory containing index.m3u8 and the .ts segments.
 
     Raises:
-        NotFound: If resolution is not in VIDEVIDEO_RESOLUTIONS.
+        NotFound: If resolution is not in VIDEO_RESOLUTIONS.
     """
     if resolution not in VIDEO_RESOLUTIONS:
         raise NotFound("Unknown resolution")

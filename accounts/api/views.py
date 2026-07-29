@@ -167,6 +167,8 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        """Blacklists the refresh token from the cookie and deletes both auth cookies."""
+
         refresh_token = request.COOKIES.get("refresh_token")
 
         if refresh_token is None:

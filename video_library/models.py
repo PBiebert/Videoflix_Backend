@@ -2,9 +2,7 @@ from django.db import models
 
 
 class Video(models.Model):
-    """
-    Model für Videos in der Video-Bibliothek.
-    """
+    """Model for videos in the video library."""
 
     title = models.CharField(max_length=255)
     description = models.TextField()
