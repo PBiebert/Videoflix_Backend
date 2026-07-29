@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from video_library.api.serializers import VideoSerializer
@@ -21,9 +22,9 @@ class VideoListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         cached_data = cache.get("video_list")
         if cached_data is not None:
-            return cached_data
+            return Response(cached_data)
         response = super().list(request, *args, **kwargs)
-        cache.set("video_list", response, 60 * 15)
+        cache.set("video_list", response.data, 60 * 15)
         return response
 
 

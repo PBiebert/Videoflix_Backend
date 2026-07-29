@@ -4,7 +4,18 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from django.core.exceptions import ImproperlyConfigured
+
 load_dotenv()
+
+
+def get_required_env(name):
+    """Returns the env var value or raises if it is not set."""
+
+    value = os.environ.get(name)
+    if not value:
+        raise ImproperlyConfigured(f"Required environment variable '{name}' is not set.")
+    return value
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,7 +89,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("DB_NAME", default="videoflix_db"),
         "USER": os.environ.get("DB_USER", default="videoflix_user"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", default="supersecretpassword"),
+        "PASSWORD": get_required_env("DB_PASSWORD"),
         "HOST": os.environ.get("DB_HOST", default="db"),
         "PORT": os.environ.get("DB_PORT", default=5432),
     }
