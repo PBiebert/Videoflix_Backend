@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -17,7 +16,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
         """Validate that the email is unique and not already in use."""
 
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email address already exists.")
+            raise serializers.ValidationError(
+                "Please check your input and try again."
+            )
         return value
 
     def validate(self, data):

@@ -11,5 +11,8 @@ class Video(models.Model):
     video_file = models.FileField(upload_to="videos/")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return self.title
