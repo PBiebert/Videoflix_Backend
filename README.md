@@ -161,7 +161,7 @@ Videoflix_Backend/
 
 The corresponding frontend repository can be found here:
 
-[Frontend Repository](#) — Coming soon
+[Videoflix_Frontend](https://github.com/PBiebert/Videoflix_Frontend)
 
 ---
 
